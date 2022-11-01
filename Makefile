@@ -19,8 +19,8 @@ endif
 # Compile flags
 #
 
-CFLAGS   = -I.              -O3 -std=c11  
-CXXFLAGS = -I. -I./examples -O3 -std=c++11
+CFLAGS   = -I.              -O3 -std=c11 -D_POSIX_SOURCE -D_GNU_SOURCE
+CXXFLAGS = -I. -I./examples -O3 -std=c++11 -D_POSIX_SOURCE -D_GNU_SOURCE
 LDFLAGS  =
 
 # OS specific
