@@ -367,13 +367,9 @@ bool output_wts(struct whisper_context * ctx, const char * fname, const char * f
     whisper_token tid_last = 0;
 
     std::ofstream fout(fname);
+    fout << "{\"words\":[{\"conf\":0,\"end\":0,\"start\":1,\"word\":\"\"}";
 
     fprintf(stderr, "%s: saving output to '%s'\n", __func__, fname);
-
-    fout << "!/bin/bash" << "\n";
-    fout << "\n";
-
-    fout << "ffmpeg -i " << fname_inp << " -f lavfi -i color=size=1200x120:duration=" << float(pcmf32.size() + 1000)/WHISPER_SAMPLE_RATE << ":rate=25:color=black -vf \"";
 
     bool is_first = true;
 
@@ -582,119 +578,20 @@ bool output_wts(struct whisper_context * ctx, const char * fname, const char * f
             }
         }
 
-        // debug info
-        // TODO: toggle via parameter
-        for (int j = 0; j < n; ++j) {
-            const auto & token = tokens[j];
-            const auto tt = token.pt > params.word_thold && token.ptsum > 0.01 ? whisper_token_to_str(ctx, token.tid) : "[?]";
-            printf("%s: %10s %6.3f %6.3f %6.3f %6.3f %5d %5d '%s'\n", __func__,
-                    tt, token.p, token.pt, token.ptsum, token.vlen, (int) token.t0, (int) token.t1, token.text.c_str());
-
-            if (tokens[j].id >= whisper_token_eot(ctx)) {
-                continue;
-            }
-
-            //printf("[%s --> %s] %s\n", to_timestamp(token.t0).c_str(), to_timestamp(token.t1).c_str(), whisper_token_to_str(ctx, token.id));
-
-            //fout << "# " << to_timestamp(token.t0) << " --> " << to_timestamp(token.t1) << " " << whisper_token_to_str(ctx, token.id) << "\n";
-        }
-
-        // TODO: become parameters
-        static const int line_wrap = 60;
-        static const char * font = "/System/Library/Fonts/Supplemental/Courier New Bold.ttf";
-
-        if (!is_first) {
-            fout << ",";
-        }
-
-        // background text
-        fout << "drawtext=fontfile='" << font << "':fontsize=24:fontcolor=gray:x=(w-text_w)/2:y=h/2:text='':enable='between(t," << t0/100.0 << "," << t0/100.0 << ")'";
-
-        is_first = false;
-
+        // json formatted
         for (int j = 0; j < n; ++j) {
             const auto & token = tokens[j];
 
             if (tokens[j].id >= whisper_token_eot(ctx)) {
                 continue;
             }
-
-            std::string txt_bg;
-            std::string txt_fg; // highlight token
-            std::string txt_ul; // underline
-
-            txt_bg = "> ";
-            txt_fg = "> ";
-            txt_ul = "\\ \\ ";
-
-            {
-                int ncnt = 0;
-                for (int k = 0; k < n; ++k) {
-                    const auto & token2 = tokens[k];
-
-                    if (tokens[k].id >= whisper_token_eot(ctx)) {
-                        continue;
-                    }
-
-                    const std::string txt = whisper_token_to_str(ctx, token2.id);
-
-                    txt_bg += txt;
-
-                    if (k == j) {
-                        for (int l = 0; l < (int) txt.size(); ++l) {
-                            txt_fg += txt[l];
-                            txt_ul += "_";
-                        }
-                        txt_fg += "|";
-                    } else {
-                        for (int l = 0; l < (int) txt.size(); ++l) {
-                            txt_fg += "\\ ";
-                            txt_ul += "\\ ";
-                        }
-                    }
-
-                    ncnt += txt.size();
-
-                    if (ncnt > line_wrap) {
-                        if (k < j) {
-                            txt_bg = "> ";
-                            txt_fg = "> ";
-                            txt_ul = "\\ \\ ";
-                            ncnt = 0;
-                        } else {
-                            break;
-                        }
-                    }
-                }
-
-                ::replace_all(txt_bg, "'", "’");
-                ::replace_all(txt_bg, "\"", "\\\"");
-                ::replace_all(txt_fg, "'", "’");
-                ::replace_all(txt_fg, "\"", "\\\"");
-            }
-
-            // background text
-            fout << ",drawtext=fontfile='" << font << "':fontsize=24:fontcolor=gray:x=(w-text_w)/2:y=h/2:text='" << txt_bg << "':enable='between(t," << token.tt0/100.0 << "," << token.tt1/100.0 << ")'";
-
-            // foreground text
-            fout << ",drawtext=fontfile='" << font << "':fontsize=24:fontcolor=lightgreen:x=(w-text_w)/2+8:y=h/2:text='" << txt_fg << "':enable='between(t," << token.t0/100.0 << "," << token.t1/100.0 << ")'";
-
-            // underline
-            fout << ",drawtext=fontfile='" << font << "':fontsize=24:fontcolor=lightgreen:x=(w-text_w)/2+8:y=h/2+16:text='" << txt_ul << "':enable='between(t," << token.t0/100.0 << "," << token.t1/100.0 << ")'";
+            fout << ",{\"start\":" << token.t0 << "\"end\":" << token.t1 << ",\"word\":\"" << token.text.c_str() << "\"}";
         }
     }
 
-    fout << "\" -c:v libx264 -pix_fmt yuv420p -y " << fname_inp << ".mp4" << "\n";
-
-    fout << "\n\n";
-    fout << "echo \"Your video has been saved to " << fname_inp << ".mp4\"" << "\n";
-    fout << "\n";
-    fout << "echo \"  ffplay " << fname_inp << ".mp4\"\n";
-    fout << "\n";
+    fout << "]}";
 
     fout.close();
-
-    fprintf(stderr, "%s: run 'source %s' to generate karaoke video\n", __func__, fname);
 
     return true;
 }
