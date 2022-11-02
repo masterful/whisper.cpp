@@ -367,7 +367,7 @@ bool output_wts(struct whisper_context * ctx, const char * fname, const char * f
     whisper_token tid_last = 0;
 
     std::ofstream fout(fname);
-    fout << "{\"words\":[{\"conf\":0,\"end\":0,\"start\":1,\"word\":\"\"}";
+    fout << "{\"result\":[{\"conf\":0,\"end\":0,\"start\":1,\"word\":\"\"}";
 
     fprintf(stderr, "%s: saving output to '%s'\n", __func__, fname);
 
