@@ -19,15 +19,15 @@ endif
 # Compile flags
 #
 
-CFLAGS   = -I.              -O3 -std=c11 -D_POSIX_SOURCE -D_GNU_SOURCE
-CXXFLAGS = -I. -I./examples -O3 -std=c++11 -D_POSIX_SOURCE -D_GNU_SOURCE
+CFLAGS   = -I.              -O3 -std=c11
+CXXFLAGS = -I. -I./examples -O3 -std=c++11
 LDFLAGS  =
 
 # OS specific
 # TODO: support Windows
 ifeq ($(UNAME_S),Linux)
-	CFLAGS   += -pthread
-	CXXFLAGS += -pthread
+	CFLAGS   += -pthread -D_POSIX_SOURCE -D_GNU_SOURCE
+	CXXFLAGS += -pthread -D_POSIX_SOURCE -D_GNU_SOURCE
 endif
 ifeq ($(UNAME_S),Darwin)
 	CFLAGS   += -pthread
