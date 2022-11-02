@@ -748,7 +748,7 @@ int main(int argc, char ** argv) {
 
             // output to WTS file
             if (params.output_wts) {
-                const auto fname_wts = fname_inp + ".wts";
+                const auto fname_wts = fname_inp + ".json";
                 output_wts(ctx, fname_wts.c_str(), fname_inp.c_str(), params, pcmf32);
             }
         }
