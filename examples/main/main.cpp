@@ -585,7 +585,7 @@ bool output_wts(struct whisper_context * ctx, const char * fname, const char * f
             if (tokens[j].id >= whisper_token_eot(ctx)) {
                 continue;
             }
-            fout << ",{\"start\":" << token.t0 << "\"end\":" << token.t1 << ",\"word\":\"" << token.text.c_str() << "\"}";
+            fout << ",{\"start\":" << token.t0/100.0 << ",\"end\":" << token.t1/100.0 << ",\"word\":\"" << token.text.c_str() << "\"}";
         }
     }
 
